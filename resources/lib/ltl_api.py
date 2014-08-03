@@ -131,6 +131,41 @@ def parse_video_list(html):
     return video_list, video_ids
 
 
+def parse_menu_hackaround(source_url, html_buffer):
+    """This function is a'hackaround to parse and extract the video list info from the 'Un Bien Belge Histoire' program,
+    due to its special contents.
+    """
+
+    title_pattern       = '<meta property="og:title" content="(.*?)"'
+    plot_pattern        = '<meta property="og:description" content="(.*?)"'
+    thumb_pattern       = '<meta property="og:image" content="(.*?)"'
+    video_block_pattern = '<h2>Sur le même sujet</h2>[^<]*?<ul>(.*?)</ul>'
+    url_item_pattern    = '<a href="(.*?)"'
+    thumb_item_pattern  = '<img src="(.*?)"'
+    title_item_pattern  = '<span>(.*?)</span>'
+
+    video_list = [ {
+        'url'        : source_url,
+        'title'      : get_clean_title(l.find_first(html_buffer, title_pattern)),
+        'plot'       : get_clean_title(l.find_first(html_buffer, plot_pattern)),
+        'thumbnail'  : l.find_first(html_buffer, thumb_pattern),
+        'IsPlayable' : True,
+        }, ]
+
+    video_block = l.find_first(html_buffer, video_block_pattern)
+
+    for video_item in video_block.split('</a>'):
+        item = {
+            'url'        : l.find_first(video_item, url_item_pattern),
+            'title'      : get_clean_title(l.find_first(video_item, title_item_pattern)),
+            'thumbnail'  : l.find_first(video_item, thumb_item_pattern),
+            'IsPlayable' : True,
+            }
+        video_list.append(item)
+
+    return video_list
+
+
 def get_video_items(cookies='', params='', localized=lambda x: x):
     """This function gets the video items from the LTL website and returns them in a pretty data format."""
 
@@ -250,6 +285,8 @@ def get_video_sec(url):
 
     buffer_url = l.carga_web(url)
     video_list, video_ids = parse_video_list(buffer_url)
+    if not len(video_list): # This is a "kackaround" for "Un Bien Belge Histoire" special menu.
+        video_list = parse_menu_hackaround(url, buffer_url)
     # This section is for the Search menu Next Page entry.
     next_url, next_label = l.find_first(buffer_url, pattern_next) or ('', '')
     if next_url:
@@ -332,15 +369,16 @@ def get_search_url(search_string):
 def get_playable_url(url):
     """This function returns a playable URL parsing the different video sources available from the iframe link"""
     video_patterns = (
-            ('dailymotion1', '"[htp:]*?//www.dailymotion.com[/]+?video/([^"]*?)"', 'dailymotion'),
+            ('dailymotion1', '"[htp:]*?//www.dailymotion.com[/]+?video/([^"]*?)"',   'dailymotion'),
             ('dailymotion2', '"[htp:]*?//www.dailymotion.com/embed/video/([^"]*?)"', 'dailymotion'),
-            ('dailymotion3', 'www.dailymotion.com%2Fembed%2Fvideo%2F(.*?)%', 'dailymotion'),
-            ('youtube1', 'videoId: "([0-9A-Za-z_-]{11})', 'youtube'),
-            ('youtube2', 'youtube.com/watch\?v=([0-9A-Za-z_-]{11})', 'youtube'),
-            ('youtube3', 'youtube.com%2Fembed%2F([0-9A-Za-z_-]{11})', 'youtube'),
-            ('youtube4', 'youtube.com/embed/([0-9A-Za-z_-]{11})', 'youtube'),
-            ('vimeo1', 'vimeo.com/video/([0-9]+)', 'vimeo'),
-            ('vimeo2', 'vimeo.com%2Fvideo%2F([0-9]+)', 'vimeo'),
+            ('dailymotion3', 'www.dailymotion.com%2Fembed%2Fvideo%2F(.*?)%',         'dailymotion'),
+            ('youtube1',     'videoId: "([0-9A-Za-z_-]{11})',                        'youtube'),
+            ('youtube2',     'youtube.com/watch\?v=([0-9A-Za-z_-]{11})',             'youtube'),
+            ('youtube3',     'youtube.com%2Fembed%2F([0-9A-Za-z_-]{11})',            'youtube'),
+            ('youtube4',     'youtube.com/embed/([0-9A-Za-z_-]{11})',                'youtube'),
+            ('vimeo1',       'vimeo.com/video/([0-9]+)',                             'vimeo'),
+            ('vimeo2',       'vimeo.com%2Fvideo%2F([0-9]+)',                         'vimeo'),
+            ('arte1',        'json_url=(http://arte.tv/.*?json)',                    'arte'),
             )
     
     buffer_url = l.carga_web(url)
@@ -376,11 +414,33 @@ def get_playable_youtube_url(video_id):
 
 def get_playable_dailymotion_url(video_id):
     """This function returns the playable URL for the Dalymotion embedded video from the video_id retrieved."""
-    pattern_daily_video = '"stream_h264_hq_url":"(.+?)"'
+    daily_video_patterns = (
+        '"stream_h264_hq_url":"(.+?)"',
+        '"stream_h264_url":"(.+?)"',
+        '"stream_h264_ld_url":"(.+?)"',
+        )
 
     daily_url = 'http://www.dailymotion.com/embed/video/' + video_id
     buffer_link = l.carga_web(daily_url)
-    video_url = l.find_first(buffer_link, pattern_daily_video)
-    if video_url:
-        return video_url.replace('\\','')
+    for pattern_daily_video in daily_video_patterns:
+        video_url = l.find_first(buffer_link, pattern_daily_video)
+        if video_url:
+            return video_url.replace('\\','')
+    return ''
+
+
+def get_playable_arte_url(json_url):
+    """This function returns the playable URL for the Arte TV embedded video from the video_id retrieved.
+    Credits and thanks to AddonScriptorDE for his Arte.tv add-on and let me learn from his code how to do it.
+    Unfortunately, I cannot call his add-on directly due to the way the video URL is already encoded into the
+    LTL website iframe, so I have to reproduce a custom version of the scraper here to let the Vox Pop to work.
+    """
+
+    # Note: the following two lines are learned from AddonScriptorDE's Arte.tv add-on code.
+    video_pattern_sd = '"HBBTV","VQU":"EQ","VMT":"mp4","VUR":"(.+?)"'
+    arte_url = json_url.replace('/player/', '/')
+
+    buffer_link = l.carga_web(arte_url)
+    return l.find_first(buffer_link, video_pattern_sd)
+
 

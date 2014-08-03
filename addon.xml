@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<addon id="plugin.video.latelelibre_fr" name="LaTeleLibre.fr" version="0.0.8" provider-name="Jose Antonio Montes (jamontes)">
+<addon id="plugin.video.latelelibre_fr" name="LaTeleLibre.fr" version="1.0.0" provider-name="Jose Antonio Montes (jamontes)">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
         <import addon="plugin.video.youtube" version="4.4.9"/>
@@ -17,7 +17,7 @@
         <description lang="fr">Née le 24 janvier 2007, LaTéléLibre est le premier média numérique (pureplayer) citoyen, indépendant et participatif. LaTéléLibre a pour objet de promouvoir, de soutenir la libre expression, la libre création, la libre communication des pensées et des opinions, comme de l’information. Elle s’attache à la diffusion desdites informations, pensées et opinions au plus large public au moyen d’articles, d’informations brutes, de reportages, d’investigations.[CR]Cette plugin permetre de regarder LaTéléLibre.fr médiathèque qui se trouve sur leur site web.[CR]Plus de 2500 reportages, documentaires et émissions sont disponibles.</description>
         <language>fr</language>
         <license>GNU GENERAL PUBLIC LICENSE. Version 3, 29 June 2007</license>
-        <forum>http://forum.xbmc.org/showthread.php?tid=</forum>
+        <forum>http://forum.xbmc.org/showthread.php?tid=200933</forum>
         <source>https://github.com/jamontes/plugin.video.latelelibre_fr</source>
         <website>http://latelelibre.fr/</website>
         <mail></mail>

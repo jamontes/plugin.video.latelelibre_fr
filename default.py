@@ -242,12 +242,12 @@ def grille_list(params):
     exclude = params.get('exclude', '')
 
     params_grille = {
-            'type'    : ctype,
-            'theme'   : theme,
-            'sorting' : sorting,
-            'exclude' : exclude,
-            'limit'   : '15',
-            }
+        'type'    : ctype,
+        'theme'   : theme,
+        'sorting' : sorting,
+        'exclude' : exclude,
+        'limit'   : '15',
+        }
 
     videos      = api.get_video_items(params=params_grille, localized=get_located_string)
     reset_cache = 'yes' if params.get('reset_cache') == 'yes' or videos['reset_cache'] else 'no'

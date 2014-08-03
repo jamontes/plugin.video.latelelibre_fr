@@ -1,3 +1,11 @@
+1.0.0
+- Updated version number for official repo bump.
+0.0.9
+- Added forum thread to addon and README files.
+- Added support for "Une Bien Belge Histoire" program menu.
+- Improved Dailymotion parser to support some of "Les 1M" LQ videos.
+- Added support for "Vox Pop" videos from Arte.tv (credits: AddonScriptorDE).
+- Added Travis-CI integration support for scraper API testing.
 0.0.8
 - Cleaned up code and documentation.
 - prepared everything for first bump into git repo.

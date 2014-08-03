@@ -34,7 +34,7 @@ It aims to deliver the open information access and its democratization to the ci
 To install it simply download the zip file, and then proceed as with any other plugin from XBMC:
  System->Settings->Add-ons->Install from zip file.
 
-Any issues detected can be reported using this forum thread for official support: http://forum.xbmc.org/showthread.php?tid=
+Any issues detected can be reported using this forum thread for official support: http://forum.xbmc.org/showthread.php?tid=200933
 
 Enjoy it!
 
