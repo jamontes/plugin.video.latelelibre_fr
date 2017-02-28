@@ -160,3 +160,13 @@ def find_first(text,pattern):
         return  pat_url_par.findall(text)[0]
     except:
         return ""
+
+
+def sanitize_url(url_string):
+    """Fixes URL format for certain different URL patterns on latelelibre.fr"""
+    prefix = ''
+    if url_string.startswith('//'):
+        prefix = 'http:'
+    elif url_string.startswith('/'):
+        prefix = 'http://latelelibre.fr'
+    return prefix + url_string

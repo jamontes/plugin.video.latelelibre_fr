@@ -108,7 +108,7 @@ def parse_video_list(html):
                                     month,
                                     year,
                                    ),
-                    'thumbnail'  : thumb,
+                    'thumbnail'  : l.sanitize_url(thumb),
                     'plot'       : "%s\n%s%s\n%s  %s%s  %s*  %s %s" % (
                                     get_clean_title(plot),
                                     date_text,
@@ -144,21 +144,23 @@ def parse_menu_hackaround(source_url, html_buffer):
     thumb_item_pattern  = '<img src="(.*?)"'
     title_item_pattern  = '<span>(.*?)</span>'
 
+    thumbnail_url = l.find_first(html_buffer, thumb_pattern)
     video_list = [ {
         'url'        : source_url,
         'title'      : get_clean_title(l.find_first(html_buffer, title_pattern)),
         'plot'       : get_clean_title(l.find_first(html_buffer, plot_pattern)),
-        'thumbnail'  : l.find_first(html_buffer, thumb_pattern),
+        'thumbnail'  : l.sanitize_url(thumbnail_url),
         'IsPlayable' : True,
         }, ]
 
     video_block = l.find_first(html_buffer, video_block_pattern)
 
     for video_item in video_block.split('</a>'):
+        thumbnail_url = l.find_first(video_item, thumb_item_pattern)
         item = {
             'url'        : l.find_first(video_item, url_item_pattern),
             'title'      : get_clean_title(l.find_first(video_item, title_item_pattern)),
-            'thumbnail'  : l.find_first(video_item, thumb_item_pattern),
+            'thumbnail'  : l.sanitize_url(thumbnail_url),
             'IsPlayable' : True,
             }
         video_list.append(item)
@@ -340,7 +342,7 @@ def get_video_docs():
                                 month,
                                 year,
                                ),
-                'thumbnail'  : thumb,
+                'thumbnail'  : l.sanitize_url(thumb),
                 'plot'       : "%s\n%s\n%s %s %s %s %s" % (
                                 get_clean_title(plot),
                                 date,
