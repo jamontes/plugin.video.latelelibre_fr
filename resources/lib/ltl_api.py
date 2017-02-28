@@ -417,7 +417,7 @@ def get_playable_youtube_url(video_id):
 
 def get_playable_dailymotion_url(video_id):
     """This function returns the playable URL for the Dalymotion embedded video from the video_id retrieved."""
-    daily_video_pattern = '"%s":\[{"type":"video\\\/mp4","url":"(.+?)"'
+    daily_video_pattern = '"%s":\[[^]]*{"type":"video\\\/mp4","url":"(.+?)"'
     daily_video_qualities = ('1080', '720', '480', '380', '240', '144')
 
     daily_url = 'http://www.dailymotion.com/embed/video/' + video_id
