@@ -13,17 +13,17 @@
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-   
+
    This is the first trial of LaTeleLibre.fr video add-on for XBMC.
    This add-on gets the videos from LaTeleLibre.fr web site and shows
    them properly ordered.
    This plugin depends on the lutil and plugin library functions.
 '''
 
-from resources.lib.plugin import Plugin 
+from resources.lib.plugin import Plugin
 import resources.lib.ltl_api as api
 
 plugin_id = 'plugin.video.latelelibre_fr'
@@ -51,7 +51,7 @@ api.set_debug(debug_flag)
 def get_located_string(string_name):
     """This function returns the localized string if it is available."""
     return translation(localized_strings.get(string_name)).encode('utf-8') or string_name if string_name in localized_strings else string_name
-            
+
 
 # Entry point
 def run():
@@ -199,7 +199,7 @@ def menu_grille(params):
             title   = genre,
         ),
         'IsPlayable': False,
-        } for itheme in themes.split('¡') ] 
+        } for itheme in themes.split('¡') ]
 
     p.add_items(themes_items)
 
@@ -227,7 +227,7 @@ def grille_sort(params):
             genre   = genre,
         ),
         'IsPlayable': False,
-        } for isorting in sorting.split('¡') ] 
+        } for isorting in sorting.split('¡') ]
 
     p.add_items(sorting_items)
 
@@ -300,6 +300,7 @@ def play_video(params):
         return p.play_resolved_url(url)
     else:
         p.showWarning(get_located_string('Type not suported'))
+
 
 # Runs the add-on from here.
 run()

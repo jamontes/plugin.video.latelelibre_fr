@@ -3,17 +3,17 @@
 '''
    LaTeleLibre.fr API lib: library functions for LaTeleLibre.fr add-on.
    Copyright (C) 2014 José Antonio Montes (jamontes)
-   
+
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -92,7 +92,7 @@ def parse_video_list(html):
     for video_section in html.split(item_sep):
         video_id, title, theme, views, rating = l.find_first(video_section, video_entry_pattern) or ('', '', '', '0', '0')
         if video_id:
-            video_ids.append(video_id) 
+            video_ids.append(video_id)
             url, thumb = l.find_first(video_section, video_entry_url) or ('', '')
             l.log('Video info. video_id: "%s" url: "%s" thumb: "%s" title: "%s" category: "%s" views: "%s" rating: "%s"' % (video_id, url, thumb, title, theme, views, rating))
             plot = l.find_first(video_section, video_entry_plot)
@@ -108,7 +108,7 @@ def parse_video_list(html):
                                     month,
                                     year,
                                    ),
-                    'thumbnail'  : thumb,
+                    'thumbnail'  : l.sanitize_url(thumb),
                     'plot'       : "%s\n%s%s\n%s  %s%s  %s*  %s %s" % (
                                     get_clean_title(plot),
                                     date_text,
@@ -144,21 +144,23 @@ def parse_menu_hackaround(source_url, html_buffer):
     thumb_item_pattern  = '<img src="(.*?)"'
     title_item_pattern  = '<span>(.*?)</span>'
 
+    thumbnail_url = l.find_first(html_buffer, thumb_pattern)
     video_list = [ {
         'url'        : source_url,
         'title'      : get_clean_title(l.find_first(html_buffer, title_pattern)),
         'plot'       : get_clean_title(l.find_first(html_buffer, plot_pattern)),
-        'thumbnail'  : l.find_first(html_buffer, thumb_pattern),
+        'thumbnail'  : l.sanitize_url(thumbnail_url),
         'IsPlayable' : True,
         }, ]
 
     video_block = l.find_first(html_buffer, video_block_pattern)
 
     for video_item in video_block.split('</a>'):
+        thumbnail_url = l.find_first(video_item, thumb_item_pattern)
         item = {
             'url'        : l.find_first(video_item, url_item_pattern),
             'title'      : get_clean_title(l.find_first(video_item, title_item_pattern)),
-            'thumbnail'  : l.find_first(video_item, thumb_item_pattern),
+            'thumbnail'  : l.sanitize_url(thumbnail_url),
             'IsPlayable' : True,
             }
         video_list.append(item)
@@ -207,7 +209,7 @@ def get_video_items(cookies='', params='', localized=lambda x: x):
         if params.get('exclude'):
             exclude_list = params.get('exclude') + ';' + ';'.join(videoids)
         else:
-            exclude_list = ';'.join(videoids) 
+            exclude_list = ';'.join(videoids)
 
         video_entry = {
                     'title'      : '>> %s' % localized('Next page'),
@@ -246,15 +248,15 @@ def get_create_index():
 
     root_url = 'http://latelelibre.fr'
     menu_entries = (
-            ( 'menu_grille',   '<label class="all selected">.*?<span>(.*?)</span></label>', 'all'), 
-            ( 'menu_grille',   '<label class="news">.*?<span>(.*?)</span></label>',         'reportage'), 
-            ( 'menu_sec',      '<a href="/emissions/">(.*?)</a>',                           'emissions'), 
-            ( 'menu_sec',      '<a href="/chroniques/">(.*?)</a>',                          'chroniques'), 
-            ( 'menu_sec',      '<a href="/series/">(.*?)</a>',                              'series'), 
-            ( 'video_docs',    '<h1 class="tt">(Les Docs)</h1>',                            ''), 
-            ( 'search_videos', '<a href="#recherche">(.*?)</a>',                            ''), 
+            ( 'menu_grille',   '<label class="all selected">.*?<span>(.*?)</span></label>', 'all'),
+            ( 'menu_grille',   '<label class="news">.*?<span>(.*?)</span></label>',         'reportage'),
+            ( 'menu_sec',      '<a href="/emissions/">(.*?)</a>',                           'emissions'),
+            ( 'menu_sec',      '<a href="/chroniques/">(.*?)</a>',                          'chroniques'),
+            ( 'menu_sec',      '<a href="/series/">(.*?)</a>',                              'series'),
+            ( 'video_docs',    '<h1 class="tt">(Les Docs)</h1>',                            ''),
+            ( 'search_videos', '<a href="#recherche">(.*?)</a>',                            ''),
             )
-    
+
     buffer_url = l.carga_web(root_url)
     level_options = get_two_level_menu(buffer_url)
 
@@ -340,7 +342,7 @@ def get_video_docs():
                                 month,
                                 year,
                                ),
-                'thumbnail'  : thumb,
+                'thumbnail'  : l.sanitize_url(thumb),
                 'plot'       : "%s\n%s\n%s %s %s %s %s" % (
                                 get_clean_title(plot),
                                 date,
@@ -381,7 +383,7 @@ def get_playable_url(url):
             ('vimeo3',       'vimeo.com/([0-9]+)',                                   'vimeo'),
             ('vimeo4',       'vimeo.com/moogaloop.swf\?clip_id=([0-9]+)',            'vimeo'),
             )
-    
+
     buffer_url = l.carga_web(url)
 
     for pattern_name, pattern, source in video_patterns:
@@ -415,8 +417,8 @@ def get_playable_youtube_url(video_id):
 
 def get_playable_dailymotion_url(video_id):
     """This function returns the playable URL for the Dalymotion embedded video from the video_id retrieved."""
-    daily_video_pattern = '"%s":\[{"type":"video\\\/mp4","url":"(.+?)"'
-    daily_video_qualities = ('480', '720', '380', '240')
+    daily_video_pattern = '"%s":\[[^]]*{"type":"video\\\/mp4","url":"(.+?)"'
+    daily_video_qualities = ('1080', '720', '480', '380', '240', '144')
 
     daily_url = 'http://www.dailymotion.com/embed/video/' + video_id
     buffer_link = l.carga_web(daily_url)
@@ -425,5 +427,3 @@ def get_playable_dailymotion_url(video_id):
         if video_url:
             return video_url.replace('\\','')
     return ''
-
-

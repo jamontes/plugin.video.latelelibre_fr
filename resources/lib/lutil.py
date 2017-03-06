@@ -8,12 +8,12 @@
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -61,7 +61,7 @@ def get_url_encoded(url):
 def get_parms_encoded(**kwars):
     """This function returns the params encoded to form an URL or data post."""
     param_list = urllib.urlencode(kwars)
-    _log('get_parms_encoded params: "%s"' % param_list)  
+    _log('get_parms_encoded params: "%s"' % param_list)
     return param_list
 
 
@@ -148,7 +148,7 @@ def find_multiple(text,pattern):
     """This function allows us to find multiples matches from a regexp into a string."""
 
     pat_url_par = re.compile(pattern, re.DOTALL)
-   
+
     return pat_url_par.findall(text)
 
 
@@ -160,3 +160,13 @@ def find_first(text,pattern):
         return  pat_url_par.findall(text)[0]
     except:
         return ""
+
+
+def sanitize_url(url_string):
+    """Fixes URL format for certain different URL patterns on latelelibre.fr"""
+    prefix = ''
+    if url_string.startswith('//'):
+        prefix = 'http:'
+    elif url_string.startswith('/'):
+        prefix = 'http://latelelibre.fr'
+    return prefix + url_string
