@@ -45,7 +45,33 @@ translation = p.get_plugin_translation()
 debug_flag = settings.getSetting("debug") == "true"
 
 p.set_debug_mode(debug_flag)
-api.set_debug(debug_flag)
+api.set_debug(debug_flag, p.log)
+
+st_release = settings.getSetting('version')
+current_release = settings.getAddonInfo('version')
+update_settings = False
+
+# This is to make it sure that settings are correctly setup on every addon
+# update if required or on first time of update settings either.
+if not st_release:
+    p.log("ltl Warning: First run of update settings.")
+    settings.openSettings()
+    settings.setSetting('version', current_release)
+elif st_release != current_release:
+    p.log("ltl Warning: updated release. Check for update settings.")
+    if update_settings:
+        settings.openSettings()
+    settings.setSetting('version', current_release)
+
+# Gets the quality for videos from settings
+try:
+    quality = int(settings.getSetting('quality'))
+except:
+    settings.setSetting('quality', '2') # Sets the default quality to 480
+    quality = 2 # Default value is bandwith conservative.
+
+p.log('ltl video quality setup to "%s"' % ('1080', '720', '480')[quality])
+api.set_video_quality(quality)
 
 
 def get_located_string(string_name):
